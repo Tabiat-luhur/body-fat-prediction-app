@@ -52,23 +52,24 @@ def main():
     st.title('Body Fat Percentage Prediction App')
     st.write('Masukkan informasi berikut untuk memprediksi persentase body fat Anda.')
 
-    # User inputs
-    age = st.number_input('Usia (tahun)', min_value=18, max_value=99, value=30)
-    weight_kg = st.number_input('Berat (kg)', min_value=36.29, max_value=181.44, value=68.0)
-    height_cm = st.number_input('Tinggi (cm)', min_value=127.0, max_value=228.6, value=172.72)
-    neck_cm = st.number_input('Lingkar Leher (cm)', min_value=30.0, max_value=60.0, value=35.0)
-    chest_cm = st.number_input('Lingkar Dada (cm)', min_value=70.0, max_value=200.0, value=100.0)
-    abdomen_cm = st.number_input('Lingkar Perut (cm)', min_value=60.0, max_value=150.0, value=85.0)
-    hip_cm = st.number_input('Lingkar Pinggul (cm)', min_value=70.0, max_value=150.0, value=95.0)
-    thigh_cm = st.number_input('Lingkar Paha (cm)', min_value=30.0, max_value=100.0, value=55.0)
-    knee_cm = st.number_input('Lingkar Lutut (cm)', min_value=20.0, max_value=70.0, value=40.0)
-    ankle_cm = st.number_input('Lingkar Pergelangan Kaki (cm)', min_value=15.0, max_value=40.0, value=23.0)
-    biceps_cm = st.number_input('Lingkar Biceps (cm)', min_value=20.0, max_value=60.0, value=30.0)
-    forearm_cm = st.number_input('Lingkar Lengan Bawah (cm)', min_value=20.0, max_value=40.0, value=25.0)
-    wrist_cm = st.number_input('Lingkar Pergelangan Tangan (cm)', min_value=10.0, max_value=25.0, value=15.0)
+    with st.form(key='predict_form'):
+        age = st.number_input('Usia (tahun)', min_value=18, max_value=99, value=30)
+        weight_kg = st.number_input('Berat (kg)', min_value=36.29, max_value=181.44, value=68.0)
+        height_cm = st.number_input('Tinggi (cm)', min_value=127.0, max_value=228.6, value=172.72)
+        neck_cm = st.number_input('Lingkar Leher (cm)', min_value=30.0, max_value=60.0, value=35.0)
+        chest_cm = st.number_input('Lingkar Dada (cm)', min_value=70.0, max_value=200.0, value=100.0)
+        abdomen_cm = st.number_input('Lingkar Perut (cm)', min_value=60.0, max_value=150.0, value=85.0)
+        hip_cm = st.number_input('Lingkar Pinggul (cm)', min_value=70.0, max_value=150.0, value=95.0)
+        thigh_cm = st.number_input('Lingkar Paha (cm)', min_value=30.0, max_value=100.0, value=55.0)
+        knee_cm = st.number_input('Lingkar Lutut (cm)', min_value=20.0, max_value=70.0, value=40.0)
+        ankle_cm = st.number_input('Lingkar Pergelangan Kaki (cm)', min_value=15.0, max_value=40.0, value=23.0)
+        biceps_cm = st.number_input('Lingkar Biceps (cm)', min_value=20.0, max_value=60.0, value=30.0)
+        forearm_cm = st.number_input('Lingkar Lengan Bawah (cm)', min_value=20.0, max_value=40.0, value=25.0)
+        wrist_cm = st.number_input('Lingkar Pergelangan Tangan (cm)', min_value=10.0, max_value=25.0, value=15.0)
 
-    # Prediction
-    if st.button('Submit'):
+        submit_button = st.form_submit_button(label='Submit')
+
+    if submit_button:
         result = predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm)
         st.write(f'Prediksi Persentase Body Fat: {result:.2f}%')
 
