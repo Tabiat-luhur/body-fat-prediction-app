@@ -13,12 +13,32 @@ from sklearn.pipeline import Pipeline
 @st.cache_data
 def load_data():
     df = pd.read_csv('bodyfat.csv')
+    
+    # Menambahkan kolom 'ExerciseHoursPerWeek' ke dataset
+    # Misalnya dengan nilai random untuk simulasi
+    np.random.seed(42)
+    df['ExerciseHoursPerWeek'] = np.random.randint(0, 7, size=len(df))  # Atur sesuai kondisi sebenarnya
+    
+    # Kategorisasi level keaktifan
+    df['ActivityLevel'] = pd.cut(df['ExerciseHoursPerWeek'], 
+                                 bins=[0, 1, 3, 5, np.inf], 
+                                 labels=['Sedentary', 'Light', 'Moderate', 'High'])
+    
+    # Mapping nilai density berdasarkan level keaktifan
+    density_mapping = {
+        'Sedentary': 1.00,  
+        'Light': 1.02,
+        'Moderate': 1.04,
+        'High': 1.06  
+    }
+    df['EstimatedDensity'] = df['ActivityLevel'].map(density_mapping)
+    
     return df
 
 df = load_data()
 
 # Separate features and target variable
-X = df[['Age', 'Weight', 'Height', 'Neck', 'Chest', 'Abdomen', 'Hip', 'Thigh', 'Knee', 'Ankle', 'Biceps', 'Forearm', 'Wrist']]
+X = df[['Age', 'Weight', 'Height', 'Neck', 'Chest', 'Abdomen', 'Hip', 'Thigh', 'Knee', 'Ankle', 'Biceps', 'Forearm', 'Wrist', 'Density']]
 y = df['BodyFat']
 
 # Split data into training and testing sets
@@ -44,14 +64,48 @@ mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
 
 # Function to predict body fat percentage
-def predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm):
+def predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm, exercise_hours_per_week):
     # Convert height from cm to inches
     height_inches = height_cm / 2.54
     # Convert weight from kg to lbs
     weight_lbs = weight_kg / 0.453592
-    input_data = np.array([[age, weight_lbs, height_inches, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm]])
+
+    # Tentukan estimasi density berdasarkan jam olahraga
+    if exercise_hours_per_week <= 0.5:
+        estimated_density = 1.00
+    elif exercise_hours_per_week <= 1.5:
+        estimated_density = 1.03
+    elif exercise_hours_per_week <= 2.0:
+        estimated_density = 1.05
+    elif exercise_hours_per_week <= 4.0:
+        estimated_density = 1.06
+    elif exercise_hours_per_week <= 5.0:
+        estimated_density = 1.07
+    else:
+        estimated_density = 1.08
+
+    # Create a DataFrame with the input data and proper column names
+    input_data = pd.DataFrame({
+        'Age': [age],
+        'Weight': [weight_lbs],
+        'Height': [height_inches],
+        'Neck': [neck_cm],
+        'Chest': [chest_cm],
+        'Abdomen': [abdomen_cm],
+        'Hip': [hip_cm],
+        'Thigh': [thigh_cm],
+        'Knee': [knee_cm],
+        'Ankle': [ankle_cm],
+        'Biceps': [biceps_cm],
+        'Forearm': [forearm_cm],
+        'Wrist': [wrist_cm],
+        'Density': [estimated_density]
+    })
+
+    # Predict using the stacking model
     prediction = stacking_model.predict(input_data)
     return prediction[0]
+
 
 # Streamlit app
 def main():
@@ -72,11 +126,12 @@ def main():
         biceps_cm = st.number_input('Lingkar Biceps (cm)', min_value=20.0, max_value=60.0, value=30.0)
         forearm_cm = st.number_input('Lingkar Lengan Bawah (cm)', min_value=20.0, max_value=40.0, value=25.0)
         wrist_cm = st.number_input('Lingkar Pergelangan Tangan (cm)', min_value=10.0, max_value=25.0, value=15.0)
+        exercise_hours_per_week = st.number_input('Rata-rata Jam Olahraga per Minggu', min_value=0.0, max_value=20.0, value=3.0)
 
         submit_button = st.form_submit_button(label='Submit')
 
     if submit_button:
-        result = predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm)
+        result = predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm, exercise_hours_per_week)
         st.write(f'## Prediksi Persentase Body Fat: {result:.2f}%')
         st.write('### Model Performance on Test Set:')
         st.write(f'> Mean Absolute Error (MAE): {mae:.2f}')
