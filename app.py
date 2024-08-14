@@ -37,6 +37,12 @@ stacking_model = StackingRegressor(estimators=pipelines, final_estimator=LinearR
 # Train the stacking model
 stacking_model.fit(X_train, y_train)
 
+# Evaluate the stacking model on the test set
+y_pred = stacking_model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
 # Function to predict body fat percentage
 def predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm):
     # Convert height from cm to inches
@@ -49,7 +55,7 @@ def predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, h
 
 # Streamlit app
 def main():
-    st.title('Body Fat Percentage Prediction App')
+    st.header('Body Fat Percentage Prediction App')
     st.write('Masukkan informasi berikut untuk memprediksi persentase body fat Anda.')
 
     with st.form(key='predict_form'):
@@ -71,7 +77,11 @@ def main():
 
     if submit_button:
         result = predict_body_fat(age, weight_kg, height_cm, neck_cm, chest_cm, abdomen_cm, hip_cm, thigh_cm, knee_cm, ankle_cm, biceps_cm, forearm_cm, wrist_cm)
-        st.write(f'Prediksi Persentase Body Fat: {result:.2f}%')
+        st.write(f'## Prediksi Persentase Body Fat: {result:.2f}%')
+        st.write('### Model Performance on Test Set:')
+        st.write(f'> Mean Absolute Error (MAE): {mae:.2f}')
+        st.write(f'> Mean Squared Error (MSE): {mse:.2f}')
+        st.write(f'> R-squared (R²): {r2:.2f}')
 
 if __name__ == '__main__':
     main()
